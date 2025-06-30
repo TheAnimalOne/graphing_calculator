@@ -8,7 +8,10 @@ from graphing_calculator.functional_tree.nodes import (
     MultiplicationNode,
     ExponentialNode
 )
-from graphing_calculator.functional_tree.function_node import find_variables
+from graphing_calculator.functional_tree.function_node import (
+    find_variables,
+    FunctionNode,
+)
 
 EIGHT = ConstantNode(8)
 X = VariableNode("x")
@@ -39,3 +42,41 @@ TEST_NAMES = ("tree", "expected_result")
 @pytest.mark.parametrize(TEST_NAMES, [(k, v) for k, v in TEST_TREES.items()])
 def test_find_variables(tree: NodeType, expected_result):
     assert find_variables(tree) == expected_result
+
+
+TEST_NAMES_FUNC = ("name", "tree", "expected_result")
+
+TEST_FUNC = {
+    ("f", X_AND_Y): {
+        "grad": "f (y) = 1 + y",
+        "eval": 20,
+        "part_eval": "f1 (x) = 4 + (y + 8)",
+        "str": "f(x, y) = (x + 8) + (y + 8)",
+        "repr": f"<FunctionNode: f -> [x, y]> = {repr(X_AND_Y)}"
+    }
+}
+
+
+@pytest.mark.parametrize(TEST_NAMES_FUNC, [(*k, v.get("grad")) for k, v in TEST_FUNC.items() if v.get("grad")])
+def test_func_node_grad(name: str, tree: NodeType, expected_result):
+    assert str(FunctionNode(name, tree).grad("x")) == expected_result
+
+
+@pytest.mark.parametrize(TEST_NAMES_FUNC, [(*k, v.get("eval")) for k, v in TEST_FUNC.items() if v.get("eval")])
+def test_func_node_eval(name: str, tree: NodeType, expected_result):
+    assert FunctionNode(name, tree).evaluate({"x": 3, "y": 1}) == expected_result
+
+
+@pytest.mark.parametrize(TEST_NAMES_FUNC, [(*k, v.get("part_val")) for k, v in TEST_FUNC.items() if v.get("part_val")])
+def test_func_node_part_val(name: str, tree: NodeType, expected_result):
+    assert str(FunctionNode(name, tree).partial_evaluate({"x": 3})) == expected_result
+
+
+@pytest.mark.parametrize(TEST_NAMES_FUNC, [(k, v.get("str")) for k, v in TEST_FUNC.items() if v.get("str")])
+def test_func_node_str(name: str, tree: NodeType, expected_result):
+    assert str(FunctionNode(name, tree)) == expected_result
+
+
+@pytest.mark.parametrize(TEST_NAMES_FUNC, [(*k, v.get("repr")) for k, v in TEST_FUNC.items() if v.get("repr")])
+def test_func_node_repr(name: str, tree: NodeType, expected_result):
+    assert repr(FunctionNode(name, tree)) == expected_result
