@@ -1,5 +1,10 @@
-from typing import TypeVar
-from graphing_calculator.functional_tree.nodes import Node, NodeType, UnaryNode, VariableNode
+from typing import TypeVar, Optional
+from graphing_calculator.functional_tree.nodes import (
+    Node,
+    NodeType,
+    UnaryNode,
+    VariableNode,
+)
 
 
 def find_variables(tree: NodeType) -> set[str]:
@@ -18,7 +23,7 @@ FunctionNodeType = TypeVar("FunctionNodeType", bound="FunctionNode")
 
 class FunctionNode(Node):
 
-    def __init__(self, name: str, tree: Node, input_variables: set[str]):
+    def __init__(self, name: str, tree: Node, input_variables: Optional[set[str]] = None):
         self.name = name
         self.tree = tree
         self.input_variables = input_variables or find_variables(tree)
@@ -27,7 +32,7 @@ class FunctionNode(Node):
         return FunctionNode(
             self.name + "'",
             self.tree.grad(wrt),
-            self.input_variables - {wrt}
+            # must recalculate the variables left (maybe wrt variable has been removed after diff)
         )
 
     def evaluate(self, at: dict[str, float]) -> float:
@@ -35,9 +40,9 @@ class FunctionNode(Node):
 
     def partial_evaluate(self, at: dict[str, float]) -> FunctionNodeType:
         return FunctionNode(
-            self.name + "1",
+            self.name + "_1",
             self.tree.partial_evaluate(at),
-            self.input_variables - set(at.keys()),
+            self.input_variables - set(at.keys()),  # can remove evaluated variables
         )
 
     def __str__(self) -> str:
