@@ -48,18 +48,18 @@ TEST_NAMES_FUNC = ("name", "tree", "expected_result")
 
 TEST_FUNC = {
     ("f", X_AND_Y): {
-        "grad": "f' (y) = 1 + y",
+        "grad": "f' () = 1",
         "eval": 20,
         "part_eval": "f_1 (y) = 11 + (y + 8)",
-        "str": "f(x, y) = (x + 8) + (y + 8)",
-        "repr": f"<FunctionNode: f -> [x, y]> = {repr(X_AND_Y)}"
+        "str": "f (x, y) = (x + 8) + (y + 8)",
+        "repr": f"<FunctionNode: f -> ['x', 'y']> = {repr(X_AND_Y)}"
     },
     ("g", X_AND_Y_AND_Z_1): {
-        "grad": "g' (y, z) = z * (1 + y)",
+        "grad": "g' (z) = 0 + 1 * z",
         "eval": 40,
         "part_eval": "g_1 (y, z) = z * (11 + (y + 8))",
         "str": "g (x, y, z) = z * ((x + 8) + (y + 8))",
-        "repr": f"<FunctionNode: g -> [x, y, z]> = {repr(X_AND_Y_AND_Z_1)}"
+        "repr": f"<FunctionNode: g -> ['x', 'y', 'z']> = {repr(X_AND_Y_AND_Z_1)}"
     }
 }
 
@@ -74,12 +74,12 @@ def test_func_node_eval(name: str, tree: NodeType, expected_result):
     assert FunctionNode(name, tree).evaluate({"x": 3, "y": 1, "z": 2}) == expected_result
 
 
-@pytest.mark.parametrize(TEST_NAMES_FUNC, [(*k, v.get("part_val")) for k, v in TEST_FUNC.items() if v.get("part_val")])
+@pytest.mark.parametrize(TEST_NAMES_FUNC, [(*k, v.get("part_eval")) for k, v in TEST_FUNC.items() if v.get("part_eval")])
 def test_func_node_part_val(name: str, tree: NodeType, expected_result):
     assert str(FunctionNode(name, tree).partial_evaluate({"x": 3})) == expected_result
 
 
-@pytest.mark.parametrize(TEST_NAMES_FUNC, [(k, v.get("str")) for k, v in TEST_FUNC.items() if v.get("str")])
+@pytest.mark.parametrize(TEST_NAMES_FUNC, [(*k, v.get("str")) for k, v in TEST_FUNC.items() if v.get("str")])
 def test_func_node_str(name: str, tree: NodeType, expected_result):
     assert str(FunctionNode(name, tree)) == expected_result
 

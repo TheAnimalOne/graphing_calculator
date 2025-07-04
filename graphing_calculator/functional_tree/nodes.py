@@ -1,8 +1,16 @@
 from typing import TypeVar
 from abc import ABC, abstractmethod
-
+from enum import Enum
 
 NodeType = TypeVar("NodeType", bound="Node")
+
+
+class OPERATOR_SYMBOL(Enum):
+    ADD = "+"
+    SUB = "-"
+    MULT = "*"
+    DIV = "/"
+    EXP = "^"
 
 
 class Node(ABC):
@@ -92,7 +100,7 @@ class VariableNode(UnaryNode):
 
 class AdditionNode(BinaryOpNode):
     """left = f(x), right = g(x)"""
-    SYMBOL = "+"
+    SYMBOL = OPERATOR_SYMBOL.ADD.value
 
     def grad(self, wrt) -> NodeType:
         """Gradient f(x) + g(x) -> f'(x) + g'(x)"""
@@ -118,7 +126,7 @@ class AdditionNode(BinaryOpNode):
 
 class SubtractionNode(BinaryOpNode):
     """left = f(x), right = g(x)"""
-    SYMBOL = "-"
+    SYMBOL = OPERATOR_SYMBOL.SUB.value
 
     def grad(self, wrt) -> NodeType:
         """Gradient f(x) - g(x) -> f'(x) - g'(x)"""
@@ -144,7 +152,7 @@ class SubtractionNode(BinaryOpNode):
 
 class MultiplicationNode(BinaryOpNode):
     """left = f(x), right = g(x)"""
-    SYMBOL = "*"
+    SYMBOL = OPERATOR_SYMBOL.MULT.value
 
     def grad(self, wrt) -> NodeType:
         """Gradient f(x) * g(x) -> f'(x) * g(x) + f(x) * g'(x)"""
@@ -190,7 +198,7 @@ class MultiplicationNode(BinaryOpNode):
 
 class DivisionNode(BinaryOpNode):
     """left = f(x), right = g(x)"""
-    SYMBOL = "/"
+    SYMBOL = OPERATOR_SYMBOL.DIV.value
 
     def grad(self, wrt) -> NodeType:
         """Gradient f(x) / g(x) -> (f'(x) * g(x) - f(x) * g'(x)) / (g(x))^2"""
@@ -244,7 +252,7 @@ class DivisionNode(BinaryOpNode):
 
 class ExponentialNode(BinaryOpNode):
     """left = f(x), right = n"""
-    SYMBOL = "^"
+    SYMBOL = OPERATOR_SYMBOL.EXP.value
 
     def grad(self, wrt) -> NodeType:
         """Gradient f(x) ^ n -> n * f'(x) * (f(x))^(n-1)"""

@@ -48,9 +48,9 @@ class FunctionNode(Node):
     def __str__(self) -> str:
         tree_str = str(self.tree)
         if tree_str.startswith("(") and tree_str.endswith(")"):
-            return f"{self.name} ({', '.join(self.input_variables)}) = {tree_str[1:-1]}"
+            return f"{self.name} ({', '.join(sorted(self.input_variables))}) = {tree_str[1:-1]}"
         else:
-            return f"{self.name} ({', '.join(self.input_variables)}) = {tree_str}"
+            return f"{self.name} ({', '.join(sorted(self.input_variables))}) = {tree_str}"
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}: {self.name} -> {list(self.input_variables)}> = {repr(self.tree)}"
+        return f"<{self.__class__.__name__}: {self.name} -> {list(sorted(self.input_variables))}> = {repr(self.tree)}"
