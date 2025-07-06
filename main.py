@@ -1,16 +1,26 @@
-# This is a sample Python script.
+import sys
+import ctypes
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QApplication
+from graphing_calculator.ui_components.calculator_window import CalculatorWindow
+
+APP_ID = u'graphing_calculator_app.v1.0.0'
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def main():
+    print("Starting App!")
+    # add logo to bar
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_ID)
+    graphing_calculator_app = QApplication([])
+    # add logo
+    # graphing_calculator_app.setWindowIcon(QIcon("classes/convertible.png"))
+    # set dark mode
+    graphing_calculator_app.styleHints().setColorScheme(Qt.ColorScheme.Dark)
+    calculator_app_window = CalculatorWindow()
+    calculator_app_window.show()
+    sys.exit(graphing_calculator_app.exec())
 
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+if __name__ == "__main__":
+    main()
