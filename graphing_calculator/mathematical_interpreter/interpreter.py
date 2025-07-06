@@ -2,7 +2,7 @@ import re
 
 from graphing_calculator.functional_tree.nodes import (
     NodeType,
-    OPERATOR_SYMBOL,
+    OperatorSymbol,
     ConstantNode,
     VariableNode,
     AdditionNode,
@@ -17,18 +17,18 @@ NUMBER = r"-?\d*\.{0,1}\d+"
 SYMBOLS = r"[+*()-^]"
 VARIABLE = r"\w+"
 PRECEDENCE = {
-    OPERATOR_SYMBOL.EXP.value: (2, "right"),
-    OPERATOR_SYMBOL.MULT.value: (1, "left"),
-    OPERATOR_SYMBOL.DIV.value: (1, "left"),
-    OPERATOR_SYMBOL.ADD.value: (0, "left"),
-    OPERATOR_SYMBOL.SUB.value: (0, "left"),
+    OperatorSymbol.EXP: (2, "right"),
+    OperatorSymbol.MULT: (1, "left"),
+    OperatorSymbol.DIV: (1, "left"),
+    OperatorSymbol.ADD: (0, "left"),
+    OperatorSymbol.SUB: (0, "left"),
 }
 NODE_BY_OPERATOR = {
-    OPERATOR_SYMBOL.EXP.value: ExponentialNode,
-    OPERATOR_SYMBOL.MULT.value: MultiplicationNode,
-    OPERATOR_SYMBOL.DIV.value: DivisionNode,
-    OPERATOR_SYMBOL.ADD.value: AdditionNode,
-    OPERATOR_SYMBOL.SUB.value: SubtractionNode,
+    OperatorSymbol.EXP: ExponentialNode,
+    OperatorSymbol.MULT: MultiplicationNode,
+    OperatorSymbol.DIV: DivisionNode,
+    OperatorSymbol.ADD: AdditionNode,
+    OperatorSymbol.SUB: SubtractionNode,
 }
 
 
@@ -38,7 +38,7 @@ def tokeniser(text: str) -> list[str]:
     return tokens
 
 
-def check_operator_precedence(op1: str, op2: str) -> bool:
+def check_operator_precedence(op1: OperatorSymbol, op2: OperatorSymbol) -> bool:
     """Check operator precedence, taking into account the associativity"""
     op1_precedence, op1_associativity = PRECEDENCE[op1]
     op2_precedence, _ = PRECEDENCE[op2]
@@ -47,9 +47,9 @@ def check_operator_precedence(op1: str, op2: str) -> bool:
     return op2_precedence == op1_precedence and op1_associativity == 'left'
 
 
-def shunting_yard_lexer(tokens: list[str]) -> list[str]:
+def shunting_yard_lexer(tokens: list[str | OperatorSymbol]) -> list[str]:
     """Implementation of shunting yard algorithm to get RPN https://en.wikipedia.org/wiki/Shunting_yard_algorithm"""
-    operators = [o.value for o in OPERATOR_SYMBOL]
+    operators = [o for o in OperatorSymbol]
     output = []
     operator_stack = []
     for token in tokens:
