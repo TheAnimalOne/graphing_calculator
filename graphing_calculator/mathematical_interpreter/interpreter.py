@@ -13,7 +13,8 @@ from graphing_calculator.functional_tree.nodes import (
 )
 
 
-NUMBER = r"-?\d*\.{0,1}\d+"
+NUMBER = r"\d*\.{0,1}\d+"
+ANY_NUMBER = r"-?\d*\.{0,1}\d+"
 SYMBOLS = r"[+*()-^]"
 VARIABLE = r"\w+"
 PRECEDENCE = {
@@ -35,7 +36,21 @@ NODE_BY_OPERATOR = {
 def tokeniser(text: str) -> list[str]:
     """Produces tokens from text"""
     tokens = re.findall(f"{NUMBER}|{SYMBOLS}|{VARIABLE}", text)
-    return tokens
+    tokens_with_negative_numbers = []
+    i = 0
+    prev_token = None
+    is_unary_sub = False
+    while i < len(tokens):
+        if is_unary_sub:
+            tokens_with_negative_numbers.pop()
+            tokens_with_negative_numbers.append(f"-{tokens[i]}")
+        else:
+            tokens_with_negative_numbers.append(tokens[i])
+        if (tokens[i] == OperatorSymbol.SUB) and (prev_token is None or prev_token == '(' or prev_token in OperatorSymbol):
+            is_unary_sub = True
+        prev_token = tokens[i]
+        i += 1
+    return tokens_with_negative_numbers
 
 
 def check_operator_precedence(op1: OperatorSymbol, op2: OperatorSymbol) -> bool:
@@ -53,7 +68,7 @@ def shunting_yard_lexer(tokens: list[str | OperatorSymbol]) -> list[str]:
     output = []
     operator_stack = []
     for token in tokens:
-        if re.match(fr"{NUMBER}|{VARIABLE}", token):
+        if re.match(fr"{ANY_NUMBER}|{VARIABLE}", token):
             output.append(token)
         elif token in operators:
             while (operator_stack and operator_stack[-1] != "(") and (
@@ -84,7 +99,7 @@ def parse_rpn_to_functional_tree(output_rpn: list[str]) -> NodeType:
     """Parses an expression in RPN form into a Node Tree"""
     output = []
     for token in output_rpn:
-        if re.match(NUMBER, token):
+        if re.match(ANY_NUMBER, token):
             node = ConstantNode(float(token))
         elif re.match(VARIABLE, token):
             node =  VariableNode(token)
