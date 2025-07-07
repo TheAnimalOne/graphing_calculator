@@ -48,14 +48,14 @@ TEST_NAMES_FUNC = ("name", "tree", "expected_result")
 
 TEST_FUNC = {
     ("f", X_AND_Y): {
-        "grad": "f' () = 1",
+        "grad": "f_x () = 1",
         "eval": 20,
         "part_eval": "f_1 (y) = 11 + (y + 8)",
         "str": "f (x, y) = (x + 8) + (y + 8)",
         "repr": f"<FunctionNode: f -> ['x', 'y']> = {repr(X_AND_Y)}"
     },
     ("g", X_AND_Y_AND_Z_1): {
-        "grad": "g' (z) = 0 + 1 * z",
+        "grad": "g_x (z) = 0 + 1 * z",
         "eval": 40,
         "part_eval": "g_1 (y, z) = z * (11 + (y + 8))",
         "str": "g (x, y, z) = z * ((x + 8) + (y + 8))",
