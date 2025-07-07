@@ -23,10 +23,13 @@ FunctionNodeType = TypeVar("FunctionNodeType", bound="FunctionNode")
 
 class FunctionNode(Node):
 
+    DEFINED_FUNCTIONS = {}
+
     def __init__(self, name: str, tree: Node, input_variables: Optional[set[str]] = None):
         self.name = name
         self.tree = tree
         self.input_variables = input_variables or find_variables(tree)
+        self.DEFINED_FUNCTIONS[name] = self
 
     def grad(self, wrt: str) -> FunctionNodeType:
         return FunctionNode(
