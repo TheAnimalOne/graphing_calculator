@@ -11,6 +11,7 @@ from graphing_calculator.functional_tree.nodes import (
     DivisionNode,
     ExponentialNode,
 )
+from graphing_calculator.functional_tree.function_node import FunctionNode
 
 
 NUMBER = r"\d*\.{0,1}\d+"
@@ -102,7 +103,8 @@ def parse_rpn_to_functional_tree(output_rpn: list[str]) -> NodeType:
         if re.match(ANY_NUMBER, token):
             node = ConstantNode(float(token))
         elif re.match(VARIABLE, token):
-            node =  VariableNode(token)
+            node = FunctionNode.DEFINED_FUNCTIONS.get(token)
+            node = node or VariableNode(token)
         elif re.match(SYMBOLS, token):
             r_node = output.pop()
             l_node = output.pop()

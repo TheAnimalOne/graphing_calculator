@@ -33,7 +33,7 @@ class FunctionNode(Node):
 
     def grad(self, wrt: str) -> FunctionNodeType:
         return FunctionNode(
-            self.name + "'",
+            self.name + f"_{wrt}",
             self.tree.grad(wrt),
             # must recalculate the variables left (maybe wrt variable has been removed after diff)
         )

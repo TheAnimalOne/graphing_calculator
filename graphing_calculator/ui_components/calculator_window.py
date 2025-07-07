@@ -1,4 +1,4 @@
-import sys
+import re
 from enum import StrEnum
 
 from PyQt6.QtWidgets import (
@@ -63,7 +63,7 @@ class CalculatorWindow(QWidget):
         calc_tab = QWidget(self)
         layout = QVBoxLayout()
         l = QListWidget()
-        l.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+        # l.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
         self.history = l
         layout.addWidget(l)
 
@@ -90,39 +90,46 @@ class CalculatorWindow(QWidget):
         return graph_tab
 
     def calculate(self):
+        try:
+            self._calculate()
+        except Exception as e:
+            print(e)
+            self.history.addItem(f"ERR! {e}")
+
+    def _calculate(self):
         mode = self.calc_type.currentText()
         text = self.text_box.text()
         self.text_box.clear()
         if not text:
             return None
 
-        self.history.addItem(text)
-        print(text)
-
+        self.history.addItem(f"{mode} {text}")
+        text = text.replace(" ", "")
         match mode:
             case CalculationOptions.CALCULATE:
                 if "," in text:
                     math_expression, variable_data = text.split(",")
+                    variable_data = re.findall(r"\w+=\d+", variable_data)
+                    variable_data = {var.split("=")[0]: float(var.split("=")[1]) for var in variable_data}
                 else:
-                    math_expression = text
-                try:
-                    variable_data = {}
-                    tree = interpret_text_to_tree(math_expression)
-                    result = tree.evaluate(variable_data)
-                    self.history.addItem(str(result))
-                except Exception as e:
-                    print(e)
+                    math_expression, variable_data = text, None
+                at = variable_data or {}
+                tree = interpret_text_to_tree(math_expression)
+                result = tree.evaluate(at)
+                self.history.addItem(str(result))
+
             case CalculationOptions.DEFINE:
                 if "=" not in text:
                     raise ValueError(f"Entered text must contain '=' for {mode=}, {text=}")
-                func_name, tree = text.split("=")
-                # tree = interpret_text_to_tree(text)
-                # func = FunctionNode(name, tree)
-                # self.history.addItem(func)
+                func_name, math_expression = text.split("=")
+                tree = interpret_text_to_tree(math_expression)
+                func = FunctionNode(func_name, tree)
+                self.history.addItem(str(func))
+
             case CalculationOptions.DIFFERENTIATE:
-                # name = "f"
-                # func = FunctionNode.DEFINED_FUNCTIONS[name]
-                # wrt = "x"
-                # diff = func.grad(wrt)
-                # self.history.addItem(diff)
-                pass
+                if "," not in text:
+                    raise ValueError(f"Must include 1 differentiating variable for {mode=}, {text=}")
+                name, wrt = text.split(",")
+                func = FunctionNode.DEFINED_FUNCTIONS[name]
+                diff = func.grad(wrt)
+                self.history.addItem(str(diff))
