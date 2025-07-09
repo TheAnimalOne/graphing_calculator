@@ -12,6 +12,8 @@ def find_variables(tree: NodeType) -> set[str]:
         return {tree.data}
     elif isinstance(tree, UnaryNode):
         return set()
+    elif isinstance(tree, FunctionNode):
+        return find_variables(tree.tree)
     else:
         l = find_variables(tree.left)
         r = find_variables(tree.right)
@@ -41,12 +43,8 @@ class FunctionNode(Node):
     def evaluate(self, at: dict[str, float]) -> float:
         return self.tree.evaluate(at)
 
-    def partial_evaluate(self, at: dict[str, float]) -> FunctionNodeType:
-        return FunctionNode(
-            self.name + "_1",
-            self.tree.partial_evaluate(at),
-            self.input_variables - set(at.keys()),  # can remove evaluated variables
-        )
+    def partial_evaluate(self, at: dict[str, float]) -> NodeType:
+        return self.tree.partial_evaluate(at)
 
     def __str__(self) -> str:
         tree_str = str(self.tree)

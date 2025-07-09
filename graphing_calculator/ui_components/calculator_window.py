@@ -1,23 +1,21 @@
 import re
 from enum import StrEnum
+from numpy import linspace
 
+import pyqtgraph as pg
 from PyQt6.QtWidgets import (
+    QLabel,
     QTabWidget,
     QLineEdit,
     QWidget,
-    QLayout,
     QComboBox,
-    QPlainTextEdit,
     QListWidget,
     QVBoxLayout,
-    QDateEdit,
     QPushButton,
     QHBoxLayout,
-    QAbstractItemView,
     QGridLayout,
-    QApplication,
 )
-from graphing_calculator.functional_tree.function_node import FunctionNode
+from graphing_calculator.functional_tree.function_node import FunctionNode, find_variables
 from graphing_calculator.mathematical_interpreter.interpreter import interpret_text_to_tree
 
 
@@ -50,9 +48,16 @@ class CalculatorWindow(QWidget):
         calculator_tab = self.create_calc_tab()
 
         # create graphing tab
+        self.plot_graph = None
+        self.func_options = None
+        self.var_options = None
+        self.x_min = None
+        self.x_max = None
+        self.plot_button = None
+        self.clear_button = None
+        self.current_x = None
         graphing_tab = self.create_graph_tab()
 
-        # add pane to the tab widget
         tab.addTab(calculator_tab, 'Calculate')
         tab.addTab(graphing_tab, 'Graph')
 
@@ -63,7 +68,6 @@ class CalculatorWindow(QWidget):
         calc_tab = QWidget(self)
         layout = QVBoxLayout()
         l = QListWidget()
-        # l.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
         self.history = l
         layout.addWidget(l)
 
@@ -87,6 +91,59 @@ class CalculatorWindow(QWidget):
         graph_tab = QWidget(self)
         layout = QVBoxLayout()
         graph_tab.setLayout(layout)
+        self.plot_graph = pg.PlotWidget()
+        self.plot_graph.showGrid(x=True, y=True)
+        layout.addWidget(self.plot_graph)
+        graph_info_layout = QVBoxLayout()
+
+        # choose func
+        func_layout = QHBoxLayout()
+        func_options = QComboBox(parent=self)
+        func_options.addItems(FunctionNode.DEFINED_FUNCTIONS.keys())
+        self.func_options = func_options
+        func_layout.addWidget(QLabel("function name:"))
+        func_layout.addWidget(func_options)
+        graph_info_layout.addLayout(func_layout)
+
+        # choose x axis variable
+        x_layout = QHBoxLayout()
+        variables = [f.input_variables for f in FunctionNode.DEFINED_FUNCTIONS.values()]
+        variables = list(set().union(*variables))
+        var_options = QComboBox(parent=self)
+        var_options.addItems(variables)
+        self.var_options = var_options
+        x_layout.addWidget(QLabel("x-axis variable name:"))
+        x_layout.addWidget(var_options)
+        graph_info_layout.addLayout(x_layout)
+
+        # plot func range
+        x_range_layout = QHBoxLayout()
+        x_range_layout.addWidget(QLabel("plot range: "))
+        x_range_layout.addWidget(QLabel("min"))
+        x_min_value = QLineEdit(parent=self)
+        self.x_min = x_min_value
+        x_range_layout.addWidget(x_min_value)
+        x_range_layout.addWidget(QLabel("max"))
+        x_max_value = QLineEdit(parent=self)
+        self.x_max = x_max_value
+        x_range_layout.addWidget(x_max_value)
+        graph_info_layout.addLayout(x_range_layout)
+
+        # buttons
+        buttons_layout = QHBoxLayout()
+        plot_button = QPushButton("Plot Graph")
+        self.plot_button = plot_button
+        plot_button.pressed.connect(self.add_plot_to_graph)
+        buttons_layout.addWidget(plot_button)
+
+        # clear button
+        clear_button = QPushButton("Clear Graphs")
+        self.clear_button = clear_button
+        clear_button.pressed.connect(self.clear_graph)
+        buttons_layout.addWidget(clear_button)
+        graph_info_layout.addLayout(buttons_layout)
+        layout.addLayout(graph_info_layout)
+
         return graph_tab
 
     def calculate(self):
@@ -115,7 +172,7 @@ class CalculatorWindow(QWidget):
                     math_expression, variable_data = text, None
                 at = variable_data or {}
                 tree = interpret_text_to_tree(math_expression)
-                result = tree.evaluate(at)
+                result = tree.evaluate(at) if set(at.keys()) == find_variables(tree) else tree.partial_evaluate(at)
                 self.history.addItem(str(result))
 
             case CalculationOptions.DEFINE:
@@ -133,3 +190,34 @@ class CalculatorWindow(QWidget):
                 func = FunctionNode.DEFINED_FUNCTIONS[name]
                 diff = func.grad(wrt)
                 self.history.addItem(str(diff))
+
+        self.refresh_widgets()
+
+    def add_plot_to_graph(self):
+        func_name = self.func_options.currentText()
+        func = FunctionNode.DEFINED_FUNCTIONS[func_name]
+        x_var = self.var_options.currentText()
+        if func.input_variables and x_var not in func.input_variables:
+            raise ValueError(f"Cannot plot {x_var} for {func_name}")
+        if self.current_x is not None and self.current_x != x_var:
+            self.clear_graph()
+        min_val, max_val = float(self.x_min.text()), float(self.x_max.text())
+        xs = linspace(min_val, max_val, 100_000)
+        ys = [func.evaluate({x_var: x}) for x in xs]
+        self.plot_graph.plot(xs, ys)
+        self.current_x = x_var
+
+    def clear_graph(self):
+        if self.plot_graph is not None:
+            self.plot_graph.clear()
+
+    def refresh_widgets(self):
+        if self.func_options is not None:
+            self.func_options.clear()
+            self.func_options.addItems(FunctionNode.DEFINED_FUNCTIONS.keys())
+
+        if self.var_options is not None:
+            variables = [f.input_variables for f in FunctionNode.DEFINED_FUNCTIONS.values()]
+            variables = list(set().union(*variables))
+            self.var_options.clear()
+            self.var_options.addItems(variables)
