@@ -2,7 +2,7 @@ import re
 from enum import StrEnum
 from numpy import linspace
 
-import pyqtgraph as pg
+from pyqtgraph import PlotWidget
 from PyQt6.QtWidgets import (
     QLabel,
     QTabWidget,
@@ -91,7 +91,7 @@ class CalculatorWindow(QWidget):
         graph_tab = QWidget(self)
         layout = QVBoxLayout()
         graph_tab.setLayout(layout)
-        self.plot_graph = pg.PlotWidget()
+        self.plot_graph = PlotWidget()
         self.plot_graph.showGrid(x=True, y=True)
         layout.addWidget(self.plot_graph)
         graph_info_layout = QVBoxLayout()
