@@ -43,6 +43,7 @@ def tokeniser(text: str) -> list[str]:
     is_unary_sub = False
     while i < len(tokens):
         if is_unary_sub:
+            is_unary_sub = False
             tokens_with_negative_numbers.pop()
             tokens_with_negative_numbers.append(f"-{tokens[i]}")
         else:

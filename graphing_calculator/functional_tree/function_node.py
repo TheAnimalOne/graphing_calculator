@@ -33,12 +33,8 @@ class FunctionNode(Node):
         self.input_variables = input_variables or find_variables(tree)
         self.DEFINED_FUNCTIONS[name] = self
 
-    def grad(self, wrt: str) -> FunctionNodeType:
-        return FunctionNode(
-            self.name + f"_{wrt}",
-            self.tree.grad(wrt),
-            # must recalculate the variables left (maybe wrt variable has been removed after diff)
-        )
+    def grad(self, wrt: str) -> NodeType:
+        return self.tree.grad(wrt)
 
     def evaluate(self, at: dict[str, float]) -> float:
         return self.tree.evaluate(at)

@@ -15,7 +15,7 @@ def main():
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_ID)
     graphing_calculator_app = QApplication([])
     # add logo
-    # graphing_calculator_app.setWindowIcon(QIcon("classes/convertible.png"))
+    # graphing_calculator_app.setWindowIcon(QIcon("graphing_calculator/graph_img.png"))
     # set dark mode
     graphing_calculator_app.styleHints().setColorScheme(Qt.ColorScheme.Dark)
     calculator_app_window = CalculatorWindow()
