@@ -189,7 +189,8 @@ class CalculatorWindow(QWidget):
                 name, wrt = text.split(",")
                 func = FunctionNode.DEFINED_FUNCTIONS[name]
                 diff = func.grad(wrt)
-                self.history.addItem(str(diff))
+                diff_func = FunctionNode(f"{func.name}_x", diff)
+                self.history.addItem(str(diff_func))
 
         self.refresh_widgets()
 
